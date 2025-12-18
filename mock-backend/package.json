@@ -1,0 +1,13 @@
+{
+    "name": "travelmate-mock-backend",
+    "version": "1.0.0",
+    "description": "Mock API for TravelMate",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "json-server": "^0.17.4",
+        "json-server-auth": "^2.1.0"
+    }
+}

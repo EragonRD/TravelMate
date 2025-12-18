@@ -1,0 +1,7 @@
+services:
+  mock-backend:
+    build: ./mock-backend
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./mock-backend/db.json:/app/db.json
