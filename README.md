@@ -1,5 +1,7 @@
 # TravelMate 🌍
 
+
+
 Application de gestion de voyages développée avec **React Native** et **Expo**.
 
 Ce projet suit une **Clean Architecture** stricte pour assurer la maintenabilité et la scalabilité.
@@ -110,3 +112,8 @@ npx expo start
 npm test
 ```
 Lance les tests unitaires (Jest) pour vérifier la logique utilitaire (Dates, etc.).
+
+
+## Auteur 
+Debbah Rabah Amir
+Alex-Gabriel Chitu
