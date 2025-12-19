@@ -1,4 +1,6 @@
-import { Text, View } from '@/components/Themed';
+import MapPicker from '@/components/MapPicker';
+import CityAutocomplete from '@/components/CityAutocomplete';
+import { Text, View, useThemeColor } from '@/components/Themed';
 import { useAuthStore } from '@/src/features/auth/stores/useAuthStore';
 import { createTrip } from '@/src/features/trips/services/tripsService';
 import { formatDate } from '@/src/utils/date';
@@ -8,11 +10,15 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import Colors from '@/constants/Colors';
+import { useThemeStore } from '@/src/features/settings/stores/useThemeStore';
 
 export default function CreateTripScreen() {
     const router = useRouter();
     const { user } = useAuthStore();
     const [title, setTitle] = useState('');
+    const [destination, setDestination] = useState('');
+    const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [image, setImage] = useState('');
@@ -21,6 +27,15 @@ export default function CreateTripScreen() {
     // Date Picker state
     const [showStartPicker, setShowStartPicker] = useState(false);
     const [showEndPicker, setShowEndPicker] = useState(false);
+    const [showMapPicker, setShowMapPicker] = useState(false);
+
+    const { getEffectiveColorScheme } = useThemeStore();
+    const theme = getEffectiveColorScheme() ?? 'light';
+    const backgroundColor = useThemeColor({}, 'background');
+    const textColor = useThemeColor({}, 'text');
+    const inputBg = theme === 'dark' ? '#1c1c1e' : '#f9f9f9';
+    const inputBorder = theme === 'dark' ? '#333' : '#ddd';
+    const placeholderColor = theme === 'dark' ? '#888' : '#888';
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -42,10 +57,18 @@ export default function CreateTripScreen() {
             return;
         }
 
+        const destinationRegex = /^[a-zA-Z\s\u00C0-\u00FF]+, [a-zA-Z\s\u00C0-\u00FF]+$/;
+        if (destination && !destinationRegex.test(destination.trim())) {
+            Alert.alert('Erreur', 'La destination doit être au format "Ville, Pays" (ex: Paris, France)');
+            return;
+        }
+
         setIsLoading(true);
         try {
             await createTrip({
                 title,
+                destination,
+                coordinates: coordinates || undefined,
                 startDate: startDate.toISOString().split('T')[0],
                 endDate: endDate.toISOString().split('T')[0],
                 image: image || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1000&auto=format&fit=crop',
@@ -65,13 +88,13 @@ export default function CreateTripScreen() {
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <FontAwesome name="arrow-left" size={24} color="#333" />
+                    <FontAwesome name="arrow-left" size={24} color={textColor} />
                 </TouchableOpacity>
                 <Text style={styles.title}>Nouveau Voyage</Text>
                 <View style={{ width: 24 }} />
             </View>
 
-            <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+            <TouchableOpacity onPress={pickImage} style={[styles.imagePicker, { backgroundColor: inputBg }]}>
                 {image ? (
                     <Image source={{ uri: image }} style={styles.imagePreview} />
                 ) : (
@@ -86,25 +109,51 @@ export default function CreateTripScreen() {
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Titre du voyage</Text>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { backgroundColor: inputBg, borderColor: inputBorder, color: textColor }]}
                         value={title}
                         onChangeText={setTitle}
                         placeholder="Ex: Roadtrip en Californie"
+                        placeholderTextColor={placeholderColor}
                     />
+                </View>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Destination (Ville, Pays)</Text>
+                    <View style={styles.destinationRow}>
+                        <View style={{ flex: 1 }}>
+                            <CityAutocomplete
+                                placeholder="Ex: Paris, France"
+                                value={destination}
+                                onChangeText={setDestination}
+                                onSelect={(city, coords) => {
+                                    setDestination(city);
+                                    setCoordinates(coords);
+                                }}
+                            />
+                        </View>
+                        <TouchableOpacity onPress={() => setShowMapPicker(true)} style={styles.mapButton}>
+                            <FontAwesome name="map-marker" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                    {coordinates && (
+                        <Text style={styles.coordinatesText}>
+                            📍 Position sélectionnée
+                        </Text>
+                    )}
                 </View>
 
                 <View style={styles.row}>
                     <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                         <Text style={styles.label}>Début</Text>
-                        <TouchableOpacity onPress={() => setShowStartPicker(true)} style={styles.dateInput}>
-                            <Text>{formatDate(startDate.toISOString())}</Text>
+                        <TouchableOpacity onPress={() => setShowStartPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: inputBorder }]}>
+                            <Text style={{ color: textColor }}>{formatDate(startDate.toISOString())}</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={[styles.inputGroup, { flex: 1, marginLeft: 10 }]}>
                         <Text style={styles.label}>Fin</Text>
-                        <TouchableOpacity onPress={() => setShowEndPicker(true)} style={styles.dateInput}>
-                            <Text>{formatDate(endDate.toISOString())}</Text>
+                        <TouchableOpacity onPress={() => setShowEndPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: inputBorder }]}>
+                            <Text style={{ color: textColor }}>{formatDate(endDate.toISOString())}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -129,14 +178,22 @@ export default function CreateTripScreen() {
                     {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.createButtonText}>Créer le voyage</Text>}
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+
+            <MapPicker
+                visible={showMapPicker}
+                onClose={() => setShowMapPicker(false)}
+                onSelectLocation={(coords) => {
+                    setCoordinates(coords);
+                    // Optional: Reverse geocoding could go here to auto-fill destination
+                }}
+            />
+        </ScrollView >
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        backgroundColor: '#fff',
         padding: 20,
     },
     header: {
@@ -156,7 +213,6 @@ const styles = StyleSheet.create({
     imagePicker: {
         width: '100%',
         height: 200,
-        backgroundColor: '#f0f0f0',
         borderRadius: 15,
         overflow: 'hidden',
         marginBottom: 30,
@@ -183,15 +239,13 @@ const styles = StyleSheet.create({
     label: {
         marginBottom: 8,
         fontWeight: '600',
-        color: '#555',
+        color: '#888',
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 10,
         padding: 15,
         fontSize: 16,
-        backgroundColor: '#f9f9f9',
     },
     row: {
         flexDirection: 'row',
@@ -199,10 +253,8 @@ const styles = StyleSheet.create({
     },
     dateInput: {
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 10,
         padding: 15,
-        backgroundColor: '#f9f9f9',
         alignItems: 'center',
     },
     createButton: {
@@ -218,4 +270,21 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
     },
+    destinationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    mapButton: {
+        backgroundColor: '#007AFF',
+        padding: 15,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    coordinatesText: {
+        marginTop: 5,
+        color: '#007AFF',
+        fontSize: 12,
+    }
 });

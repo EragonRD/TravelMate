@@ -4,6 +4,8 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Colors from '@/constants/Colors';
+import { useThemeStore } from '@/src/features/settings/stores/useThemeStore';
 
 interface FeedPostProps {
     trip: Trip;
@@ -13,17 +15,22 @@ const { width } = Dimensions.get('window');
 
 export const FeedPost = ({ trip }: FeedPostProps) => {
     const router = useRouter();
+    const { getEffectiveColorScheme } = useThemeStore();
+    const theme = getEffectiveColorScheme() ?? 'light';
+    const cardColor = Colors[theme].cardBackground;
+    const textColor = Colors[theme].text;
+    const subTextColor = theme === 'dark' ? '#aaa' : '#666';
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: cardColor }]}>
             <View style={styles.header}>
                 <Image source={{ uri: 'https://via.placeholder.com/40' }} style={styles.avatar} />
                 <View style={styles.userInfo}>
-                    <Text style={styles.username}>Utilisateur</Text>
-                    <Text style={styles.location}>{trip.title}</Text>
+                    <Text style={[styles.username, { color: textColor }]}>{trip.user?.name || 'Voyageur'}</Text>
+                    <Text style={[styles.location, { color: subTextColor }]}>{trip.title}</Text>
                 </View>
                 <TouchableOpacity>
-                    <FontAwesome name="ellipsis-h" size={20} color="#333" />
+                    <FontAwesome name="ellipsis-h" size={20} color={textColor} />
                 </TouchableOpacity>
             </View>
 
@@ -34,24 +41,24 @@ export const FeedPost = ({ trip }: FeedPostProps) => {
             <View style={styles.actions}>
                 <View style={styles.leftActions}>
                     <TouchableOpacity style={styles.actionButton}>
-                        <FontAwesome name={trip.isFavorite ? "heart" : "heart-o"} size={24} color={trip.isFavorite ? "red" : "#333"} />
+                        <FontAwesome name={trip.isFavorite ? "heart" : "heart-o"} size={24} color={trip.isFavorite ? "red" : textColor} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.actionButton}>
-                        <FontAwesome name="comment-o" size={24} color="#333" />
+                        <FontAwesome name="comment-o" size={24} color={textColor} />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.actionButton}>
-                        <FontAwesome name="paper-plane-o" size={24} color="#333" />
+                        <FontAwesome name="paper-plane-o" size={24} color={textColor} />
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity>
-                    <FontAwesome name="bookmark-o" size={24} color="#333" />
+                    <FontAwesome name="bookmark-o" size={24} color={textColor} />
                 </TouchableOpacity>
             </View>
 
             <View style={styles.footer}>
-                <Text style={styles.likes}>{Math.floor(Math.random() * 100)} J'aime</Text>
-                <Text style={styles.caption}>
-                    <Text style={styles.username}>Utilisateur</Text> {trip.title} - {formatDate(trip.startDate)}
+                <Text style={[styles.likes, { color: textColor }]}>{Math.floor(Math.random() * 100)} J'aime</Text>
+                <Text style={[styles.caption, { color: textColor }]}>
+                    <Text style={styles.username}>{trip.user?.name || 'Voyageur'}</Text> {trip.title} - {formatDate(trip.startDate)}
                 </Text>
                 <Text style={styles.timeAgo}>Il y a 2 heures</Text>
             </View>
@@ -62,7 +69,6 @@ export const FeedPost = ({ trip }: FeedPostProps) => {
 const styles = StyleSheet.create({
     container: {
         marginBottom: 20,
-        backgroundColor: '#fff',
     },
     header: {
         flexDirection: 'row',
@@ -84,7 +90,6 @@ const styles = StyleSheet.create({
     },
     location: {
         fontSize: 12,
-        color: '#666',
     },
     image: {
         width: width,

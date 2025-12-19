@@ -8,6 +8,7 @@ interface AuthState {
     user: User | null;
     token: string | null;
     isLoading: boolean;
+    isSessionLoading: boolean;
     error: string | null;
     login: (credentials: LoginCredentials) => Promise<void>;
     register: (credentials: RegisterCredentials) => Promise<void>;
@@ -22,7 +23,8 @@ const USER_KEY = 'auth_user';
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     token: null,
-    isLoading: true,
+    isLoading: false,
+    isSessionLoading: true,
     error: null, // Initial state for error
 
     login: async (credentials) => {
@@ -70,18 +72,18 @@ export const useAuthStore = create<AuthState>((set) => ({
     },
 
     loadSession: async () => {
-        set({ isLoading: true });
+        set({ isSessionLoading: true });
         try {
             const token = await getItem(TOKEN_KEY);
             const userStr = await getItem(USER_KEY);
 
             if (token && userStr) {
-                set({ token, user: JSON.parse(userStr), isLoading: false });
+                set({ token, user: JSON.parse(userStr), isSessionLoading: false });
             } else {
-                set({ user: null, token: null, isLoading: false });
+                set({ user: null, token: null, isSessionLoading: false });
             }
         } catch (error) {
-            set({ user: null, token: null, isLoading: false });
+            set({ user: null, token: null, isSessionLoading: false });
         }
     },
     updateProfile: async (data: Partial<User> & { password?: string }) => {

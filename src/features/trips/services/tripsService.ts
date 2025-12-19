@@ -4,13 +4,14 @@ import { CreateTripData, Trip } from '../types';
 export const getTrips = async (query?: string): Promise<Trip[]> => {
     const params = new URLSearchParams();
     if (query) params.append('q', query);
+    params.append('_expand', 'user');
 
     const response = await client.get<Trip[]>(`/trips?${params.toString()}`);
     return response.data;
 };
 
 export const getTripById = async (id: number): Promise<Trip> => {
-    const response = await client.get<Trip>(`/trips/${id}`);
+    const response = await client.get<Trip>(`/trips/${id}?_expand=user`);
     return response.data;
 };
 

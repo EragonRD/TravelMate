@@ -84,6 +84,20 @@ npx expo start
 
 ---
 
+### 💡 Décisions Techniques & Architecture
+
+1.  **Architecture (Feature-Based)** :
+    *   Le code est organisé par fonctionnalités (`features/auth`, `features/trips`) plutôt que par type de fichier (components, services). Cela permet une meilleure scalabilité et isole le domaine métier.
+2.  **Gestion d'État (Zustand)** :
+    *   Choisi pour sa simplicité et sa légèreté par rapport à Redux. Utilisé pour l'Authentification (`useAuthStore`) et le Thème (`useThemeStore`).
+3.  **UI & Styling** :
+    *   Utilisation de composants natifs (`StyleSheet`) avec un système de thème centralisé (`constants/Colors.ts`) pour gérer efficacement le **Dark Mode**.
+4.  **Backend (Mock vs Réel)** :
+    *   Utilisation de `json-server` pour mocker une API REST complète.
+    *   Les services sont prêts à être basculés sur une vraie API en changeant simplement la `BASE_URL`.
+5.  **Navigation (Expo Router)** :
+    *   Utilisation du routage basé sur les fichiers (semblable à Next.js) pour une structure de navigation intuitive et type-safe.
+
 ## 🧪 Tests
 
 ```bash

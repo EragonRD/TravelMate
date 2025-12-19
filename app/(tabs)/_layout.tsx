@@ -1,5 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
 
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
@@ -15,6 +15,7 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
 
   return (
     <Tabs
@@ -35,6 +36,19 @@ export default function TabLayout() {
           title: 'Fil',
           tabBarIcon: ({ color }) => <TabBarIcon name="rss" color={color} />,
         }}
+      />
+      <Tabs.Screen
+        name="create"
+        options={{
+          title: 'Créer',
+          tabBarIcon: ({ color }) => <TabBarIcon name="plus-circle" color={color} />,
+        }}
+        listeners={() => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            router.push('/trips/create');
+          },
+        })}
       />
       <Tabs.Screen
         name="search"

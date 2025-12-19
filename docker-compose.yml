@@ -4,4 +4,4 @@ services:
     ports:
       - "4000:4000"
     volumes:
-      - ./mock-backend/db.json:/app/db.json
+      - ./mock-backend/db.json:/app/db.json:Z

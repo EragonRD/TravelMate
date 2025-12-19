@@ -7,12 +7,21 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import * as tripsService from '../services/tripsService';
 import { Trip } from '../types';
 
+import Colors from '@/constants/Colors';
+import { useColorScheme } from 'react-native';
+
 interface TripCardProps {
     trip: Trip;
+    onPress?: () => void; // Allow custom press handler (for Map reuse)
+    containerStyle?: any; // Allow style overrides
 }
 
-export const TripCard = ({ trip }: TripCardProps) => {
+export const TripCard = ({ trip, onPress, containerStyle }: TripCardProps) => {
     const [isFavorite, setIsFavorite] = useState(trip.isFavorite);
+    const colorScheme = useColorScheme();
+    const theme = colorScheme ?? 'light';
+    const cardColor = Colors[theme].cardBackground;
+    const textColor = Colors[theme].text;
 
     const toggleFavorite = async () => {
         const newState = !isFavorite;
@@ -25,21 +34,51 @@ export const TripCard = ({ trip }: TripCardProps) => {
         }
     };
 
+    const CardContent = (
+        <Animated.View entering={FadeInDown.springify()} style={[styles.card, { backgroundColor: cardColor }, containerStyle]}>
+            <View style={styles.imageContainer}>
+                <Image source={{ uri: trip.image }} style={styles.image} />
+                <View style={styles.overlay} />
+                <TouchableOpacity style={styles.favButton} onPress={toggleFavorite}>
+                    <FontAwesome name={isFavorite ? "heart" : "heart-o"} size={22} color={isFavorite ? "#ff4757" : "white"} />
+                </TouchableOpacity>
+                <View style={styles.imageContent}>
+                    <Text style={styles.title} numberOfLines={1}>{trip.title}</Text>
+                    {trip.user?.name && (
+                        <Text style={styles.author}>Par {trip.user.name}</Text>
+                    )}
+                    {trip.destination && (
+                        <View style={styles.locationContainer}>
+                            <FontAwesome name="map-marker" size={14} color="#fff" style={{ marginRight: 6 }} />
+                            <Text style={styles.locationText} numberOfLines={1}>{trip.destination}</Text>
+                        </View>
+                    )}
+                </View>
+            </View>
+            <View style={styles.footer}>
+                <View style={styles.dateContainer}>
+                    <FontAwesome name="calendar" size={14} color={theme === 'dark' ? '#aaa' : '#666'} style={{ marginRight: 6 }} />
+                    <Text style={[styles.dates, { color: theme === 'dark' ? '#aaa' : '#666' }]}>
+                        {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                    </Text>
+                </View>
+                <FontAwesome name="chevron-right" size={14} color="#ccc" />
+            </View>
+        </Animated.View>
+    );
+
+    if (onPress) {
+        return (
+            <TouchableOpacity activeOpacity={0.9} onPress={onPress}>
+                {CardContent}
+            </TouchableOpacity>
+        );
+    }
+
     return (
         <Link href={`/trips/${trip.id}`} asChild>
-            <TouchableOpacity onPress={toggleFavorite}>
-                <Animated.View entering={FadeInDown.springify()} style={styles.card}>
-                    <Image source={{ uri: trip.image }} style={styles.image} />
-                    <TouchableOpacity style={styles.favButton} onPress={toggleFavorite}>
-                        <FontAwesome name={isFavorite ? "heart" : "heart-o"} size={24} color={isFavorite ? "red" : "white"} />
-                    </TouchableOpacity>
-                    <View style={styles.content}>
-                        <Text style={styles.title}>{trip.title}</Text>
-                        <Text style={styles.dates}>
-                            {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
-                        </Text>
-                    </View>
-                </Animated.View>
+            <TouchableOpacity activeOpacity={0.9}>
+                {CardContent}
             </TouchableOpacity>
         </Link>
     );
@@ -47,39 +86,84 @@ export const TripCard = ({ trip }: TripCardProps) => {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: 'white',
-        borderRadius: 12,
-        marginVertical: 10,
+        borderRadius: 16,
+        marginVertical: 12,
         marginHorizontal: 16,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowRadius: 8,
+        elevation: 5,
         overflow: 'hidden',
+    },
+    imageContainer: {
+        height: 180,
+        width: '100%',
+        position: 'relative',
     },
     image: {
         width: '100%',
-        height: 150,
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.25)',
     },
     favButton: {
         position: 'absolute',
-        top: 10,
-        right: 10,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        top: 12,
+        right: 12,
+        backgroundColor: 'rgba(255,255,255,0.2)',
         borderRadius: 20,
         padding: 8,
+        backdropFilter: 'blur(10px)',
     },
-    content: {
-        padding: 12,
+    imageContent: {
+        position: 'absolute',
+        bottom: 12,
+        left: 12,
+        right: 12,
     },
     title: {
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: 'bold',
+        color: '#fff',
+        textShadowColor: 'rgba(0,0,0,0.3)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 3,
         marginBottom: 4,
+    },
+    author: {
+        fontSize: 12,
+        color: '#eee',
+        fontWeight: '600',
+        marginBottom: 4,
+        textShadowColor: 'rgba(0,0,0,0.5)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 2,
+    },
+    locationContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    locationText: {
+        color: '#f0f0f0',
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    footer: {
+        padding: 16,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    dateContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     dates: {
         fontSize: 14,
-        color: '#666',
+        fontWeight: '500',
     },
 });

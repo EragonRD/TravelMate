@@ -1,16 +1,26 @@
-import { Text, View } from '@/components/Themed';
+import { View, Text, useThemeColor } from '@/components/Themed';
 import { TripsMap } from '@/src/features/maps/components/TripsMap';
 import { TripCard } from '@/src/features/trips/components/TripCard';
 import { TripFilter, useTrips } from '@/src/features/trips/hooks/useTrips';
+import { useAuthStore } from '@/src/features/auth/stores/useAuthStore';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, TextInput, TouchableOpacity, Image, Platform, useColorScheme } from 'react-native';
+import Colors from '@/constants/Colors';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { trips, isLoading, refresh, searchQuery, setSearchQuery, filter, setFilter } = useTrips();
+  const { user } = useAuthStore();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+
+  const colorScheme = useColorScheme();
+  const theme = colorScheme ?? 'light';
+  const textColor = useThemeColor({}, 'text');
+  const backgroundColor = useThemeColor({}, 'background');
+  const inputBg = theme === 'dark' ? '#1c1c1e' : '#f5f5f5';
+  const placeholderColor = theme === 'dark' ? '#888' : '#888';
 
   const FILTER_OPTIONS: { label: string; value: TripFilter }[] = [
     { label: 'Tous', value: 'all' },
@@ -19,32 +29,62 @@ export default function HomeScreen() {
     { label: 'Favoris', value: 'favorite' },
   ];
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    return hour < 18 ? 'Bonjour' : 'Bonsoir';
+  };
+
   return (
     <View style={styles.container}>
-      {/* Search Bar & View Toggle */}
-      <View style={styles.headerContainer}>
-        <View style={styles.searchContainer}>
+      {/* Header Section */}
+      <View style={[styles.header, { backgroundColor }]}>
+        <View>
+          <Text style={styles.greeting}>{getGreeting()},</Text>
+          <Text style={styles.userName}>{user?.name || 'Explorateur'}</Text>
+        </View>
+        <TouchableOpacity style={styles.avatarButton} onPress={() => router.push('/(tabs)/profile')}>
+          {user?.avatar ? (
+            <Image
+              source={{ uri: user.avatar }}
+              style={styles.headerAvatar}
+              resizeMode="cover"
+            />
+          ) : (
+            <FontAwesome name="user-circle" size={40} color="#007AFF" />
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* Search & Toggle */}
+      <View style={[styles.searchSection, { backgroundColor }]}>
+        <View style={[styles.searchContainer, { backgroundColor: inputBg }]}>
+          <FontAwesome name="search" size={16} color="#888" style={{ marginRight: 8 }} />
           <TextInput
-            style={styles.searchInput}
-            placeholder="Rechercher un voyage..."
+            style={[styles.searchInput, { color: textColor }]}
+            placeholder="Où souhaitez-vous aller ?"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            placeholderTextColor={placeholderColor}
           />
         </View>
         <TouchableOpacity
-          style={styles.toggleButton}
+          style={[styles.toggleButton, { backgroundColor: inputBg }, viewMode === 'map' && styles.activeToggle]}
           onPress={() => setViewMode(prev => prev === 'list' ? 'map' : 'list')}
         >
-          <FontAwesome name={viewMode === 'list' ? 'map' : 'list'} size={20} color="#007AFF" />
+          <FontAwesome name={viewMode === 'list' ? 'map' : 'list'} size={20} color={viewMode === 'map' ? "#fff" : "#007AFF"} />
         </TouchableOpacity>
       </View>
 
       {/* Filter Tabs */}
-      <View style={styles.filtersContainer}>
+      <View style={[styles.filtersContainer, { backgroundColor }]}>
         {FILTER_OPTIONS.map((option) => (
           <TouchableOpacity
             key={option.value}
-            style={[styles.filterTab, filter === option.value && styles.activeFilterTab]}
+            style={[
+              styles.filterTab,
+              { backgroundColor: inputBg },
+              filter === option.value && styles.activeFilterTab
+            ]}
             onPress={() => setFilter(option.value)}
           >
             <Text style={[styles.filterText, filter === option.value && styles.activeFilterText]}>
@@ -67,17 +107,12 @@ export default function HomeScreen() {
               <Text>Aucun voyage trouvé</Text>
             </View>
           }
+          style={{ backgroundColor }}
         />
       ) : (
         <TripsMap trips={trips} />
       )}
 
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push('/trips/create')}
-      >
-        <FontAwesome name="plus" size={24} color="white" />
-      </TouchableOpacity>
     </View>
   );
 }
@@ -86,73 +121,94 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerContainer: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60, // Safe Area
+    paddingBottom: 20,
+  },
+  greeting: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '500',
+  },
+  userName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  avatarButton: {
+    padding: 2,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+    borderRadius: 22,
+  },
+  headerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  searchSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 16,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    gap: 12,
   },
   searchContainer: {
     flex: 1,
-    padding: 16,
-    paddingBottom: 8,
-  },
-  toggleButton: {
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   searchInput: {
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    borderRadius: 8,
+    flex: 1,
     fontSize: 16,
+  },
+  toggleButton: {
+    padding: 12,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activeToggle: {
+    backgroundColor: '#007AFF',
   },
   filtersContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    marginBottom: 10,
   },
   filterTab: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginRight: 8,
-    backgroundColor: '#eee',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   activeFilterTab: {
     backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
   },
   filterText: {
-    color: '#333',
+    color: '#888',
+    fontWeight: '600',
   },
   activeFilterText: {
     color: '#fff',
     fontWeight: 'bold',
   },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 80, // Space for FAB
   },
   center: {
     flex: 1,
     alignItems: 'center',
     marginTop: 50,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    backgroundColor: '#007AFF',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    zIndex: 100,
-  },
+
 });

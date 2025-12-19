@@ -184,6 +184,15 @@ export default function TripDetailScreen() {
                 <Image source={{ uri: trip.image }} style={styles.image} />
 
                 <View style={styles.content}>
+                    <View style={styles.authorContainer}>
+                        {trip.user?.avatar ? (
+                            <Image source={{ uri: trip.user.avatar }} style={styles.authorAvatar} />
+                        ) : (
+                            <FontAwesome name="user-circle" size={30} color="#007AFF" />
+                        )}
+                        <Text style={styles.authorName}>Par {trip.user?.name || 'Inconnu'}</Text>
+                    </View>
+
                     <Text style={styles.dates}>
                         {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
                     </Text>
@@ -298,5 +307,21 @@ const styles = StyleSheet.create({
         fontSize: 16,
         borderWidth: 1,
         borderColor: '#ddd',
+    },
+    authorContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    authorAvatar: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 10,
+    },
+    authorName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
     },
 });

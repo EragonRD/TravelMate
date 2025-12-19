@@ -1,8 +1,10 @@
 import { Trip } from '@/src/features/trips/types';
+import { TripCard } from '@/src/features/trips/components/TripCard'; // Import
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import MapView, { Callout, Marker } from 'react-native-maps';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 
 interface TripsMapProps {
     trips: Trip[];
@@ -19,29 +21,47 @@ export const TripsMap = ({ trips }: TripsMapProps) => {
         longitudeDelta: 20,
     };
 
+    const [selectedTrip, setSelectedTrip] = React.useState<Trip | null>(null);
+
     return (
         <View style={styles.container}>
-            <MapView style={styles.map} initialRegion={initialRegion}>
-                {trips.map((trip) => (
-                    // Mock coordinates if not present (Real app would have coords in specific Activity or Trip location)
-                    // Using random jitter to show multiple markers for demo
+            <MapView
+                style={styles.map}
+                initialRegion={initialRegion}
+                onPress={() => setSelectedTrip(null)}
+            >
+                {trips.filter(t => t.coordinates).map((trip) => (
                     <Marker
                         key={trip.id}
                         coordinate={{
-                            latitude: 48 + (Math.random() * 10 - 5),
-                            longitude: 2 + (Math.random() * 10 - 5),
+                            latitude: trip.coordinates!.latitude,
+                            longitude: trip.coordinates!.longitude,
                         }}
-                        title={trip.title}
-                    >
-                        <Callout onPress={() => router.push(`/trips/${trip.id}`)}>
-                            <View style={styles.callout}>
-                                <Text style={styles.calloutTitle}>{trip.title}</Text>
-                                <Text style={styles.calloutSubtitle}>Voir détails</Text>
-                            </View>
-                        </Callout>
-                    </Marker>
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            setSelectedTrip(trip);
+                        }}
+                    />
                 ))}
             </MapView>
+
+            {selectedTrip && (
+                <View style={styles.cardContainer}>
+                    <View style={styles.cardWrapper}>
+                        <TripCard
+                            trip={selectedTrip}
+                            onPress={() => router.push(`/trips/${selectedTrip.id}`)}
+                            containerStyle={{ marginHorizontal: 0, marginVertical: 0 }}
+                        />
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setSelectedTrip(null)}
+                        >
+                            <FontAwesome name="times-circle" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     );
 };
@@ -54,15 +74,26 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
     },
-    callout: {
-        padding: 5,
-        minWidth: 100,
-        alignItems: 'center',
+    cardContainer: {
+        position: 'absolute',
+        bottom: 30,
+        left: 20, // Adjusted back to normal margin as TripCard handles its own internal layout but we want it centered
+        right: 20,
     },
-    calloutTitle: {
-        fontWeight: 'bold',
+    cardWrapper: {
+        position: 'relative',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
-    calloutSubtitle: {
-        color: '#007AFF',
-    }
+    closeButton: {
+        position: 'absolute',
+        top: 12,
+        left: 12,
+        zIndex: 10,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        borderRadius: 12,
+    },
 });

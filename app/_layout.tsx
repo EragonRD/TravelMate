@@ -50,8 +50,10 @@ export default function RootLayout() {
 
 // ... (existing imports)
 
+import { I18nProvider } from '@/src/i18n/I18nContext';
+
 function RootLayoutNav() {
-  const { loadSession, user, isLoading } = useAuthStore();
+  const { loadSession, user, isSessionLoading } = useAuthStore();
   const { themeMode, loadTheme, getEffectiveColorScheme } = useThemeStore();
   const segments = useSegments();
   const router = useRouter();
@@ -66,7 +68,7 @@ function RootLayoutNav() {
 
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isSessionLoading) return;
 
     const inAuthGroup = segments[0] === 'auth';
 
@@ -75,19 +77,21 @@ function RootLayoutNav() {
     } else if (user && inAuthGroup) {
       router.replace('/(tabs)');
     }
-  }, [user, isLoading, segments]);
+  }, [user, isSessionLoading, segments]);
 
-  if (isLoading) {
+  if (isSessionLoading) {
     return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <I18nProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="auth" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </I18nProvider>
     </ThemeProvider>
   );
 }
