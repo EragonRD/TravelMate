@@ -114,6 +114,8 @@ npm test
 Lance les tests unitaires (Jest) pour vérifier la logique utilitaire (Dates, etc.).
 
 
-## Auteur 
+## Auteur + lien vidéo
 Debbah Rabah Amir
 Alex-Gabriel Chitu
+
+https://youtu.be/QcCi3N-aZK0
