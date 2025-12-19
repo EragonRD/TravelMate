@@ -25,9 +25,9 @@ export default function LoginScreen() {
             await login(data);
             console.log('LoginScreen: Login successful, redirecting');
             router.replace('/(tabs)');
-        } catch (error) {
+        } catch (error: any) {
             console.error('LoginScreen: Login error', error);
-            Alert.alert('Erreur', 'Connexion échouée');
+            Alert.alert('Erreur', error.message || 'Connexion échouée');
         }
     };
 

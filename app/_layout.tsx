@@ -28,38 +28,44 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
+  const { isSessionLoading, loadSession } = useAuthStore();
+
+  useEffect(() => {
+    loadSession();
+  }, []);
+
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && !isSessionLoading) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, isSessionLoading]);
 
+  // Keep showing splash screen (return null) until fonts are loaded
   if (!loaded) {
     return null;
   }
 
+  // We can render the Nav now. The Nav will handle the specific redirects,
+  // but since we waited for isSessionLoading, the state is stable.
   return <RootLayoutNav />;
 }
-
-
 
 // ... (existing imports)
 
 import { I18nProvider } from '@/src/i18n/I18nContext';
 
 function RootLayoutNav() {
-  const { loadSession, user, isSessionLoading } = useAuthStore();
+  const { user, isSessionLoading } = useAuthStore();
   const { themeMode, loadTheme, getEffectiveColorScheme } = useThemeStore();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    loadSession();
     loadTheme();
   }, []);
 

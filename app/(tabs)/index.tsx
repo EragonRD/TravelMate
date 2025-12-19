@@ -8,19 +8,22 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, TextInput, TouchableOpacity, Image, Platform, useColorScheme } from 'react-native';
 import Colors from '@/constants/Colors';
+import { usePushNotifications } from '@/src/hooks/usePushNotifications';
 
 export default function HomeScreen() {
   const router = useRouter();
   const { trips, isLoading, refresh, searchQuery, setSearchQuery, filter, setFilter } = useTrips();
   const { user } = useAuthStore();
+  const { requestPermissions } = usePushNotifications();
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const colorScheme = useColorScheme();
   const theme = colorScheme ?? 'light';
   const textColor = useThemeColor({}, 'text');
   const backgroundColor = useThemeColor({}, 'background');
-  const inputBg = theme === 'dark' ? '#1c1c1e' : '#f5f5f5';
-  const placeholderColor = theme === 'dark' ? '#888' : '#888';
+  const inputBg = '#f0f0f0'; // Always light background to match Search screen
+  const searchTextColor = '#000'; // Always black text
+  const searchPlaceholderColor = '#666'; // Always dark grey placeholder
 
   const FILTER_OPTIONS: { label: string; value: TripFilter }[] = [
     { label: 'Tous', value: 'all' },
@@ -42,17 +45,24 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>{getGreeting()},</Text>
           <Text style={styles.userName}>{user?.name || 'Explorateur'}</Text>
         </View>
-        <TouchableOpacity style={styles.avatarButton} onPress={() => router.push('/(tabs)/profile')}>
-          {user?.avatar ? (
-            <Image
-              source={{ uri: user.avatar }}
-              style={styles.headerAvatar}
-              resizeMode="cover"
-            />
-          ) : (
-            <FontAwesome name="user-circle" size={40} color="#007AFF" />
-          )}
-        </TouchableOpacity>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+          <TouchableOpacity onPress={requestPermissions}>
+            <FontAwesome name="bell-o" size={24} color={textColor} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.avatarButton} onPress={() => router.push('/(tabs)/profile')}>
+            {user?.avatar ? (
+              <Image
+                source={{ uri: user.avatar }}
+                style={styles.headerAvatar}
+                resizeMode="cover"
+              />
+            ) : (
+              <FontAwesome name="user-circle" size={40} color="#007AFF" />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search & Toggle */}
@@ -60,11 +70,11 @@ export default function HomeScreen() {
         <View style={[styles.searchContainer, { backgroundColor: inputBg }]}>
           <FontAwesome name="search" size={16} color="#888" style={{ marginRight: 8 }} />
           <TextInput
-            style={[styles.searchInput, { color: textColor }]}
+            style={[styles.searchInput, { color: searchTextColor }]}
             placeholder="Où souhaitez-vous aller ?"
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor={placeholderColor}
+            placeholderTextColor={searchPlaceholderColor}
           />
         </View>
         <TouchableOpacity

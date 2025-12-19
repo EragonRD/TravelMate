@@ -18,7 +18,13 @@ export const searchCity = async (query: string): Promise<NominatimResult[]> => {
 
     try {
         const response = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&accept-language=fr`
+            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&accept-language=fr`,
+            {
+                headers: {
+                    'User-Agent': 'TravelMate/1.0',
+                    'Referer': 'https://travelmate.app'
+                }
+            }
         );
 
         if (!response.ok) {

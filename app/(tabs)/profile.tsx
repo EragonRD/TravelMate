@@ -9,6 +9,7 @@ import { useTranslation } from '@/src/i18n/I18nContext';
 import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 export default function ProfileScreen() {
     const { user, logout } = useAuthStore();
@@ -37,43 +38,71 @@ export default function ProfileScreen() {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.header}>
                 <Image
                     source={{ uri: user?.avatar || 'https://via.placeholder.com/150' }}
                     style={styles.avatar}
                 />
-                <Text style={styles.name}>{user?.name || 'Explorateur'}</Text>
-                <Text style={styles.email}>{user?.email}</Text>
+                <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'Explorateur'}</Text>
+                <Text style={[styles.email, { color: colors.tabIconDefault }]}>{user?.email}</Text>
 
                 <TouchableOpacity
                     onPress={() => setIsIditing(true)}
-                    style={[styles.editButton, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
+                    style={[styles.editButton, { backgroundColor: colors.tint }]}
                 >
-                    <Text style={[styles.editButtonText, { color: colors.text }]}>{t('profile.edit')}</Text>
+                    <Text style={styles.editButtonText}>{t('profile.edit')}</Text>
                 </TouchableOpacity>
             </View>
 
-            <View style={[styles.statsContainer, { backgroundColor: colors.cardBackground }]}>
-                <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>{stats.tripsCount}</Text>
-                    <Text style={styles.statLabel}>{t('profile.stats.trips')}</Text>
-                </View>
-                <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>{stats.activitiesCount}</Text>
-                    <Text style={styles.statLabel}>{t('profile.stats.activities')}</Text>
-                </View>
-                <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>{stats.favoritesCount}</Text>
-                    <Text style={styles.statLabel}>{t('profile.stats.favorites')}</Text>
+            <View style={[styles.card, { backgroundColor: colors.cardBackground, shadowColor: colors.shadow }]}>
+                <View style={styles.statsContainer}>
+                    <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>{stats.tripsCount}</Text>
+                        <Text style={[styles.statLabel, { color: colors.tabIconDefault }]}>{t('profile.stats.trips')}</Text>
+                    </View>
+                    <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+                    <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>{stats.activitiesCount}</Text>
+                        <Text style={[styles.statLabel, { color: colors.tabIconDefault }]}>{t('profile.stats.activities')}</Text>
+                    </View>
+                    <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+                    <View style={styles.statItem}>
+                        <Text style={[styles.statNumber, { color: colors.tint }]}>{stats.favoritesCount}</Text>
+                        <Text style={[styles.statLabel, { color: colors.tabIconDefault }]}>{t('profile.stats.favorites')}</Text>
+                    </View>
                 </View>
             </View>
 
-            <ThemeToggle />
+            <View style={[styles.sectionTitleContainer]}>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('settings.appearance') || 'Préférences'}</Text>
+            </View>
 
-            <TouchableOpacity onPress={toggleLanguage} style={[styles.langButton, { borderColor: colors.border }]}>
-                <Text style={{ color: colors.text }}>Language: {locale.toUpperCase()}</Text>
-            </TouchableOpacity>
+            <View style={[styles.card, { backgroundColor: colors.cardBackground, shadowColor: colors.shadow }]}>
+                {/* Theme Toggle Wrapper */}
+                <View style={styles.settingRow}>
+                    <View style={styles.settingLabelContainer}>
+                        <FontAwesome name="moon-o" size={20} color={colors.text} style={styles.settingIcon} />
+                        <Text style={[styles.settingLabel, { color: colors.text }]}>Thème</Text>
+                    </View>
+                </View>
+                <View style={{ marginBottom: 10 }}>
+                    <ThemeToggle minimal={true} />
+                </View>
+
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+                <TouchableOpacity onPress={toggleLanguage} style={styles.settingRow}>
+                    <View style={styles.settingLabelContainer}>
+                        <FontAwesome name="globe" size={20} color={colors.text} style={styles.settingIcon} />
+                        <Text style={[styles.settingLabel, { color: colors.text }]}>Langue</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ color: colors.tabIconDefault, marginRight: 8 }}>{locale === 'fr' ? 'Français' : 'English'}</Text>
+                        <FontAwesome name="chevron-right" size={14} color={colors.tabIconDefault} />
+                    </View>
+                </TouchableOpacity>
+            </View>
 
             <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
                 <Text style={styles.logoutText}>{t('profile.logout')}</Text>
@@ -92,12 +121,7 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         alignItems: 'center',
         padding: 20,
-        paddingTop: 60, // Safe area
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
+        paddingTop: 60,
     },
     header: {
         alignItems: 'center',
@@ -108,74 +132,105 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        marginBottom: 15,
-        backgroundColor: '#e1e4e8',
+        marginBottom: 16,
     },
     name: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 5,
-        color: '#333',
+        marginBottom: 4,
     },
     email: {
         fontSize: 16,
-        color: '#666',
-        marginBottom: 15,
+        marginBottom: 20,
     },
     editButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 24,
-        borderRadius: 25,
-        borderWidth: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        elevation: 1,
     },
     editButtonText: {
+        color: '#fff',
         fontWeight: '600',
         fontSize: 14,
     },
+    card: {
+        width: '100%',
+        borderRadius: 16,
+        marginBottom: 24,
+        padding: 16,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
     statsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '100%',
-        marginBottom: 30,
-        paddingHorizontal: 10,
-        paddingVertical: 20,
-        borderRadius: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     statItem: {
         alignItems: 'center',
+        flex: 1,
     },
     statNumber: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#007AFF',
         marginBottom: 4,
     },
     statLabel: {
-        color: '#666',
         fontSize: 12,
         fontWeight: '500',
     },
+    statDivider: {
+        width: 1,
+        height: '60%',
+        opacity: 0.2,
+    },
+    sectionTitleContainer: {
+        width: '100%',
+        marginBottom: 10,
+        paddingHorizontal: 4,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    settingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 12,
+    },
+    settingLabelContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    settingIcon: {
+        marginRight: 12,
+        width: 24,
+        textAlign: 'center',
+    },
+    settingLabel: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    divider: {
+        height: 1,
+        opacity: 0.1,
+        marginVertical: 4,
+    },
     logoutButton: {
-        marginTop: 20,
+        marginTop: 10,
         padding: 15,
         width: '100%',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 40,
     },
     logoutText: {
         color: '#ff4757',
         fontWeight: 'bold',
         fontSize: 16,
     },
-    langButton: {
-        padding: 10,
-        borderRadius: 8,
-        borderWidth: 1,
-        marginTop: 10,
-    }
 });
+

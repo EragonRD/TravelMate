@@ -5,7 +5,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useThemeStore } from '../stores/useThemeStore';
 
-export function ThemeToggle() {
+export function ThemeToggle({ minimal = false }: { minimal?: boolean }) {
     const { themeMode, setThemeMode } = useThemeStore();
     const colorScheme = useColorScheme();
     const colors = Colors[colorScheme ?? 'light'];
@@ -16,31 +16,40 @@ export function ThemeToggle() {
         { label: 'Sombre', value: 'dark' },
     ] as const;
 
+    // If minimal, we don't render the outer container and title, just the buttons row
+    const content = (
+        <View style={styles.optionsContainer}>
+            {options.map((option) => (
+                <TouchableOpacity
+                    key={option.value}
+                    style={[
+                        styles.optionButton,
+                        themeMode === option.value && { backgroundColor: colors.tint },
+                        { borderColor: colors.border }
+                    ]}
+                    onPress={() => setThemeMode(option.value)}
+                >
+                    <Text
+                        style={[
+                            styles.optionText,
+                            { color: themeMode === option.value ? '#fff' : colors.text }
+                        ]}
+                    >
+                        {option.label}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+        </View>
+    );
+
+    if (minimal) {
+        return content;
+    }
+
     return (
         <View style={[styles.container, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <Text style={[styles.title, { color: colors.text }]}>Apparence</Text>
-            <View style={styles.optionsContainer}>
-                {options.map((option) => (
-                    <TouchableOpacity
-                        key={option.value}
-                        style={[
-                            styles.optionButton,
-                            themeMode === option.value && { backgroundColor: colors.tint },
-                            { borderColor: colors.border }
-                        ]}
-                        onPress={() => setThemeMode(option.value)}
-                    >
-                        <Text
-                            style={[
-                                styles.optionText,
-                                { color: themeMode === option.value ? '#fff' : colors.text }
-                            ]}
-                        >
-                            {option.label}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            {content}
         </View>
     );
 }

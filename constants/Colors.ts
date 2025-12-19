@@ -10,6 +10,7 @@ export default {
     tabIconSelected: tintColorLight,
     cardBackground: '#fff',
     border: '#ddd',
+    shadow: '#000',
   },
   dark: {
     text: '#fff',
@@ -19,5 +20,6 @@ export default {
     tabIconSelected: tintColorDark,
     cardBackground: '#1c1c1e',
     border: '#333',
+    shadow: '#000',
   },
 };

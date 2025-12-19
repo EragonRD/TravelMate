@@ -35,7 +35,10 @@ export default function CreateTripScreen() {
     const textColor = useThemeColor({}, 'text');
     const inputBg = theme === 'dark' ? '#1c1c1e' : '#f9f9f9';
     const inputBorder = theme === 'dark' ? '#333' : '#ddd';
-    const placeholderColor = theme === 'dark' ? '#888' : '#888';
+    const placeholderColor = theme === 'dark' ? '#999' : '#888';
+    const borderColor = theme === 'dark' ? '#333' : '#ddd';
+    const iconColor = theme === 'dark' ? '#fff' : '#888';
+    const placeholderIconColor = theme === 'dark' ? '#666' : '#ccc';
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -99,7 +102,7 @@ export default function CreateTripScreen() {
                     <Image source={{ uri: image }} style={styles.imagePreview} />
                 ) : (
                     <View style={styles.placeholder}>
-                        <FontAwesome name="camera" size={40} color="#ccc" />
+                        <FontAwesome name="camera" size={40} color={placeholderIconColor} />
                         <Text style={styles.placeholderText}>Ajouter une photo de couverture</Text>
                     </View>
                 )}
@@ -109,7 +112,7 @@ export default function CreateTripScreen() {
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Titre du voyage</Text>
                     <TextInput
-                        style={[styles.input, { backgroundColor: inputBg, borderColor: inputBorder, color: textColor }]}
+                        style={[styles.input, { backgroundColor: inputBg, borderColor: borderColor, color: textColor }]}
                         value={title}
                         onChangeText={setTitle}
                         placeholder="Ex: Roadtrip en Californie"
@@ -145,14 +148,14 @@ export default function CreateTripScreen() {
                 <View style={styles.row}>
                     <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                         <Text style={styles.label}>Début</Text>
-                        <TouchableOpacity onPress={() => setShowStartPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: inputBorder }]}>
+                        <TouchableOpacity onPress={() => setShowStartPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: borderColor }]}>
                             <Text style={{ color: textColor }}>{formatDate(startDate.toISOString())}</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={[styles.inputGroup, { flex: 1, marginLeft: 10 }]}>
                         <Text style={styles.label}>Fin</Text>
-                        <TouchableOpacity onPress={() => setShowEndPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: inputBorder }]}>
+                        <TouchableOpacity onPress={() => setShowEndPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: borderColor }]}>
                             <Text style={{ color: textColor }}>{formatDate(endDate.toISOString())}</Text>
                         </TouchableOpacity>
                     </View>

@@ -16,7 +16,9 @@ export default function SearchScreen() {
     const backgroundColor = useThemeColor({}, 'background');
     const textColor = useThemeColor({}, 'text');
     const placeholderColor = theme === 'dark' ? '#888' : '#666';
-    const inputBgStr = theme === 'dark' ? '#1c1c1e' : '#f0f0f0';
+    const inputBgStr = '#f0f0f0'; // Always light background for search bar
+    const searchTextColor = '#000'; // Always black text
+    const searchPlaceholderColor = '#666'; // Always dark grey placeholder
 
     return (
         <View style={styles.container}>
@@ -24,9 +26,9 @@ export default function SearchScreen() {
                 <View style={[styles.searchBar, { backgroundColor: inputBgStr }]}>
                     <FontAwesome name="search" size={20} color="#888" style={styles.searchIcon} />
                     <TextInput
-                        style={[styles.searchInput, { color: textColor }]}
+                        style={[styles.searchInput, { color: searchTextColor }]}
                         placeholder="Rechercher un voyage..."
-                        placeholderTextColor={placeholderColor}
+                        placeholderTextColor={searchPlaceholderColor}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                         autoCapitalize="none"

@@ -26,6 +26,7 @@ export default function TripDetailScreen() {
 
     const fetchTrip = async () => {
         try {
+
             const data = await tripsService.getTripById(Number(id));
             setTrip(data);
         } catch (error) {

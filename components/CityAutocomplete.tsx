@@ -2,7 +2,7 @@
 import { NominatimResult, searchCity } from '@/src/services/nominatim';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useThemeColor } from './Themed';
 import { useThemeStore } from '@/src/features/settings/stores/useThemeStore';
 
@@ -33,7 +33,10 @@ export default function CityAutocomplete({ onSelect, defaultValue = '', placehol
     const inputBg = theme === 'dark' ? '#1c1c1e' : '#f9f9f9';
     const inputBorder = theme === 'dark' ? '#333' : '#ddd';
     const textColor = useThemeColor({}, 'text');
-    const placeholderColor = '#888';
+
+    const placeholderColor = theme === 'dark' ? '#999' : '#888';
+    const borderColor = theme === 'dark' ? '#333' : '#ddd';
+    const separatorColor = theme === 'dark' ? '#333' : '#ccc';
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
@@ -58,7 +61,9 @@ export default function CityAutocomplete({ onSelect, defaultValue = '', placehol
         // Actually for the input display, better to show what they clicked, or maybe just "City, Country"
         // Let's use display_name for now but maybe truncated
         setQuery(item.display_name);
+        // Hide results immediately after selection
         setShowResults(false);
+        setResults([]); // Clear results to prevent flashing if reopened
         onSelect(item.display_name, {
             latitude: parseFloat(item.lat),
             longitude: parseFloat(item.lon),
@@ -86,16 +91,17 @@ export default function CityAutocomplete({ onSelect, defaultValue = '', placehol
 
             {showResults && results.length > 0 && (
                 <View style={[styles.resultsList, { backgroundColor: inputBg, borderColor: inputBorder }]}>
-                    <FlatList
-                        data={results}
-                        keyExtractor={(item) => item.place_id.toString()}
-                        keyboardShouldPersistTaps="handled"
-                        renderItem={({ item }) => (
-                            <TouchableOpacity style={styles.item} onPress={() => handleSelect(item)}>
+                    <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled={true}>
+                        {results.map((item) => (
+                            <TouchableOpacity
+                                key={item.place_id}
+                                style={[styles.item, { borderBottomColor: separatorColor }]}
+                                onPress={() => handleSelect(item)}
+                            >
                                 <Text style={[styles.itemText, { color: textColor }]}>{item.display_name}</Text>
                             </TouchableOpacity>
-                        )}
-                    />
+                        ))}
+                    </ScrollView>
                 </View>
             )}
         </View>
@@ -141,10 +147,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
     },
+
     item: {
         padding: 15,
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: '#ccc',
     },
     itemText: {
         fontSize: 14,

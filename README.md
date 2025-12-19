@@ -87,16 +87,22 @@ npx expo start
 ### 💡 Décisions Techniques & Architecture
 
 1.  **Architecture (Feature-Based)** :
-    *   Le code est organisé par fonctionnalités (`features/auth`, `features/trips`) plutôt que par type de fichier (components, services). Cela permet une meilleure scalabilité et isole le domaine métier.
+    *   Le code est organisé par fonctionnalités (`src/features/auth`, `src/features/trips`) plutôt que par type de fichier technique. Cela rend le code plus facile à naviguer et à maintenir, chaque dossier contenant tout ce qui concerne une fonctionnalité spécifique (composants, hooks, services).
 2.  **Gestion d'État (Zustand)** :
-    *   Choisi pour sa simplicité et sa légèreté par rapport à Redux. Utilisé pour l'Authentification (`useAuthStore`) et le Thème (`useThemeStore`).
-3.  **UI & Styling** :
-    *   Utilisation de composants natifs (`StyleSheet`) avec un système de thème centralisé (`constants/Colors.ts`) pour gérer efficacement le **Dark Mode**.
-4.  **Backend (Mock vs Réel)** :
+    *   Choisi pour sa simplicité et sa légèreté par rapport à Redux. Utilisé pour l'Authentification (`useAuthStore`) et les Préférences (`useThemeStore`). Le store d'auth gère aussi la persistance de session via `SecureStore`.
+3.  **UI & Styling (Theme-First)** :
+    *   Utilisation stricte de `constants/Colors.ts` et du hook `useColorScheme` garantissant une compatibilité parfaite ave le **Mode Sombre**.
+    *   Standardisation des composants (Cards, Inputs) pour une UX cohérente (ex: harmonisation de la barre de recherche et du Profil).
+4.  **Sécurité & UX (Auth Guard)** :
+    *   Implémentation d'un "Auth Guard" robuste dans `_layout.tsx` qui synchronise le chargement des polices et de la session utilisateur.
+    *   Ceci empêche le "flash" de contenu non authentifié au démarrage (Splash Screen maintenu jusqu'à validation complète).
+5.  **Notifications** :
+    *   Utilisation de `expo-notifications` avec gestion des permissions et gardes de sécurité pour éviter les crashs sur simulateurs (`Device.isDevice`).
+6.  **Backend (Mock vs Réel)** :
     *   Utilisation de `json-server` pour mocker une API REST complète.
-    *   Les services sont prêts à être basculés sur une vraie API en changeant simplement la `BASE_URL`.
-5.  **Navigation (Expo Router)** :
-    *   Utilisation du routage basé sur les fichiers (semblable à Next.js) pour une structure de navigation intuitive et type-safe.
+    *   Services prêts pour la production, basés sur `axios` et des variables d'environnement.
+7.  **Navigation (Expo Router)** :
+    *   Utilisation du routage basé sur les fichiers pour une structure de navigation intuitive et type-safe.
 
 ## 🧪 Tests
 

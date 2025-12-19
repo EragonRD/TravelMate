@@ -1,11 +1,12 @@
-import { Text, View } from '@/components/Themed';
+import { Text, View, useThemeColor } from '@/components/Themed';
+import { useThemeStore } from '@/src/features/settings/stores/useThemeStore';
 import { useAuthStore } from '@/src/features/auth/stores/useAuthStore';
 import { getTripById, updateTrip } from '@/src/features/trips/services/tripsService';
 import { formatDate } from '@/src/utils/date';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
@@ -13,6 +14,16 @@ export default function EditTripScreen() {
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const { user } = useAuthStore();
+
+    const { getEffectiveColorScheme } = useThemeStore();
+    const theme = getEffectiveColorScheme() ?? 'light';
+    const backgroundColor = useThemeColor({}, 'background');
+    const textColor = useThemeColor({}, 'text');
+    const inputBg = theme === 'dark' ? '#1c1c1e' : '#f9f9f9';
+    const inputBorder = theme === 'dark' ? '#333' : '#ddd';
+    const placeholderColor = theme === 'dark' ? '#999' : '#888';
+    const iconColor = theme === 'dark' ? '#fff' : '#333';
+    const placeholderIconColor = theme === 'dark' ? '#666' : '#ccc';
 
     // State
     const [title, setTitle] = useState('');
@@ -99,21 +110,22 @@ export default function EditTripScreen() {
     }
 
     return (
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+            <Stack.Screen options={{ headerShown: false }} />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <FontAwesome name="arrow-left" size={24} color="#333" />
+                    <FontAwesome name="arrow-left" size={24} color={iconColor} />
                 </TouchableOpacity>
-                <Text style={styles.title}>Modifier le Voyage</Text>
+                <Text style={[styles.title, { color: textColor }]}>Modifier le Voyage</Text>
                 <View style={{ width: 24 }} />
             </View>
 
-            <TouchableOpacity onPress={pickImage} style={styles.imagePicker}>
+            <TouchableOpacity onPress={pickImage} style={[styles.imagePicker, { backgroundColor: inputBg }]}>
                 {image ? (
                     <Image source={{ uri: image }} style={styles.imagePreview} />
                 ) : (
                     <View style={styles.placeholder}>
-                        <FontAwesome name="camera" size={40} color="#ccc" />
+                        <FontAwesome name="camera" size={40} color={placeholderIconColor} />
                         <Text style={styles.placeholderText}>Changer la photo de couverture</Text>
                     </View>
                 )}
@@ -123,25 +135,26 @@ export default function EditTripScreen() {
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Titre du voyage</Text>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, { backgroundColor: inputBg, borderColor: inputBorder, color: textColor }]}
                         value={title}
                         onChangeText={setTitle}
                         placeholder="Ex: Roadtrip en Californie"
+                        placeholderTextColor={placeholderColor}
                     />
                 </View>
 
                 <View style={styles.row}>
                     <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
                         <Text style={styles.label}>Début</Text>
-                        <TouchableOpacity onPress={() => setShowStartPicker(true)} style={styles.dateInput}>
-                            <Text>{formatDate(startDate.toISOString())}</Text>
+                        <TouchableOpacity onPress={() => setShowStartPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: inputBorder }]}>
+                            <Text style={{ color: textColor }}>{formatDate(startDate.toISOString())}</Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={[styles.inputGroup, { flex: 1, marginLeft: 10 }]}>
                         <Text style={styles.label}>Fin</Text>
-                        <TouchableOpacity onPress={() => setShowEndPicker(true)} style={styles.dateInput}>
-                            <Text>{formatDate(endDate.toISOString())}</Text>
+                        <TouchableOpacity onPress={() => setShowEndPicker(true)} style={[styles.dateInput, { backgroundColor: inputBg, borderColor: inputBorder }]}>
+                            <Text style={{ color: textColor }}>{formatDate(endDate.toISOString())}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -173,7 +186,6 @@ export default function EditTripScreen() {
 const styles = StyleSheet.create({
     container: {
         flexGrow: 1,
-        backgroundColor: '#fff',
         padding: 20,
     },
     loading: {
@@ -198,7 +210,6 @@ const styles = StyleSheet.create({
     imagePicker: {
         width: '100%',
         height: 200,
-        backgroundColor: '#f0f0f0',
         borderRadius: 15,
         overflow: 'hidden',
         marginBottom: 30,
@@ -225,15 +236,13 @@ const styles = StyleSheet.create({
     label: {
         marginBottom: 8,
         fontWeight: '600',
-        color: '#555',
+        color: '#888',
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 10,
         padding: 15,
         fontSize: 16,
-        backgroundColor: '#f9f9f9',
     },
     row: {
         flexDirection: 'row',
@@ -241,10 +250,8 @@ const styles = StyleSheet.create({
     },
     dateInput: {
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 10,
         padding: 15,
-        backgroundColor: '#f9f9f9',
         alignItems: 'center',
     },
     createButton: {
